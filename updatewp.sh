@@ -6,7 +6,7 @@
 # updatewp.sh - Atualizando o Wordpress de forma automatica		#
 #									#
 # Autor: Felipe Silveira (felipe.silveira@outlook.com)			#
-# Data Criação: 16/10/1997						#
+# Data Criação: 18/11/2022						#
 #									#
 # Descrição: Criando uma rotina de atualização do Wordpress.		#
 #									#
