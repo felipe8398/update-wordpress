@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #########################################################################
+# Versao 0.1								#
 # 									#
 # updatewp.sh - Atualizando o Wordpress de forma automatica		#
 #									#
@@ -19,9 +20,6 @@ LOG=/var/log/updatewp.log
 PastaWP=/var/www
 DownloadWP=$PastaWP/
 ########################################################################
-
-
-
 
 # Iniciando o log da atualização
 echo "Iniciando a atualização do Wordpress em $(date)" >> $LOG
