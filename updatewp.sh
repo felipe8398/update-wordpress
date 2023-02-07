@@ -1,27 +1,51 @@
 #!/bin/bash
 
 #########################################################################
-# Versao 0.1								#
-# 									#
-# updatewp.sh - Atualizando o Wordpress de forma automatica		#
-#									#
-# Autor: Felipe Silveira (felipe.silveira@outlook.com)			#
-# Data Criação: 16/10/1997						#
-#									#
-# Descrição: Criando uma rotina de atualização do Wordpress.		#
-#									#
-# Exemplo de uso: bash updatewp.sh					#
-#									#
+# Versao 0.1							                            	#
+# 							                                    		#
+# updatewp.sh - Atualizando o Wordpress de forma automatica	        	#
+#								                                       	#
+# Autor: Felipe Silveira (felipe.silveira@outlook.com)		        	#
+# Data Criação: 16/10/1997						                        #
+#									                                    #
+# Descrição: Criando uma rotina de atualização do Wordpress.	    	#
+#									                                    #
+# Exemplo de uso: bash updatewp.sh			                    		#
+#								                                    	#
 #########################################################################
 
-##################### Variaveis ########################################
-# Log da movimentação
-LOG=/var/log/updatewp.log
-PastaWP=/var/www
-DownloadWP=$PastaWP/
-########################################################################
+##################### Variaveis #########################################
+# Logs da movimentação                                                  
+LOG=/var/log/updatewp.log                                               
 
-# Iniciando o log da atualização
+# Variaveis do Wordpress                                                
+PastaWP=/var/www                                                        
+DownloadWP=$PastaWP/                                                    
+
+# Variavel do local dos plugins do Wordpress                            
+Plugins=/var/www/wordpress/wp-content/plugins/                          
+
+# Ver a versão mais nova do plugin do Akismet
+VersaoAkismet=$(curl -s https://br.wordpress.org/plugins/akismet/ | grep \"downloadUrl\": | awk -F "plugin" '{print $2}' | awk -F '"' '{print $1}') 2> /dev/null
+
+# Pega o nome do arquivo ZIP com a /
+AkismetZip=$(echo "$VersaoAkismet" | awk -F "/" '{print $2}') 2> /dev/null
+
+# Pega o nome do arquivo ZIP sem a /
+Akismet=$(echo $VersaoAkismet | awk -F "/" '{print $2}') 2> /dev/null
+
+# Ver a versão mais nova do plugin do Google site Kit
+VersaoGoogleKit=$(curl -s https://br.wordpress.org/plugins/google-site-kit/ | grep \"downloadUrl\": | awk -F "plugin" '{print $2}' | awk -F '"' '{print $1}') 2> /dev/null
+
+# Pega o nome do arquivo ZIP com a /
+GoogleKitZip=$(echo "$VersaoGoogleKit" | awk -F "/" '{print $2}') 2> /dev/null
+
+# Pega o nome do arquivo ZIP sem a /
+GoogleKit=$(echo $VersaoGoogleKit | awk -F "/" '{print $2}') 2> /dev/null
+
+#########################################################################
+
+# Iniciando o log da atualização #
 echo "Iniciando a atualização do Wordpress em $(date)" >> $LOG
 
 # Verificando a versão do wordpress e jogando para o log #
@@ -44,13 +68,39 @@ mv $PastaWP/wordpress/ $PastaWP/wordpress_$VERSAO/ >> $LOG 2>&1
 echo "Extraindo a nova versão" >> $LOG
 tar -zxvf $PastaWP/latest.tar.gz >> $LOG 2>&1
 
-# Copaindo o wp-content, .htaccess e wp-config da versão antiga para a nova # 
+# Copiando o wp-content, .htaccess e wp-config da versão antiga para a nova # 
 echo "Copiando o WP-CONTENT da versão antiga para a nova" >> $LOG
 cp -r $PastaWP/wordpress_$VERSAO/wp-content/ $PastaWP/wordpress >> $LOG 2>&1
 echo "Copiando o WP-CONFIG da versão antiga para a nova" >> $LOG
 cp $PastaWP/wordpress_$VERSAO/wp-config.php $PastaWP/wordpress >> $LOG 2>&1
 echo "Copiando o .HTACCESS da versão antiga para a nova" >> $LOG
 cp $PastaWP/wordpress_$VERSAO/.htaccess $PastaWP/wordpress >> $LOG 2>&1
+
+# Atualizando os Plugins #
+
+# Apaga a versão antiga do Plugin Akismet #
+echo "Apagando a versão antiga do Akismet" >> $LOG
+rm -rf $Plugins/akismet/ >> $LOG 2>&1
+
+# Faz o download da versão mais atual do plugin Akismet #
+echo "Download da versão mais atual do Akismet" >> $LOG
+cd $Plugins && wget https://downloads.wordpress.org/plugin/$VersaoAkismet >> $LOG 2>&1
+
+# Retira o zip do Akismet e exclui o arquivo .zip #
+unzip -o $AkismetZip | awk -F "/" '{print $2}' >> $LOG 2>&1
+rm $AkismetZip >> $LOG 2>&1
+
+# Apaga a versão antiga do Plugin Google Site Kit #
+echo "Apagando a versão antiga do Google Site Kit" >> $LOG
+rm -rf $Plugins/google-site-kit/ >> $LOG 2>&1
+
+# Faz o download da versão mais atual do plugin Google Site Kit #
+echo "Download da versão mais atual do Google Site Kit" >> $LOG
+cd $Plugins && wget https://downloads.wordpress.org/plugin/$VersaoGoogleKit >> $LOG 2>&1
+
+# Retira o zip do Google Site Kit e exclui o arquivo .zip #
+unzip -o $GoogleKitZip | awk -F "/" '{print $2}' >> $LOG 2>&1
+rm $GoogleKitZip >> $LOG 2>&1
 
 # Reiniciando o apache #
 echo "Reiniciando o Apache" >> $LOG
